@@ -1,0 +1,439 @@
+<title>Binary quadratic forms — project dashboard</title>
+<style>
+  :root{
+    --paper:#F4F6F3; --surface:#FFFFFF; --ink:#17211F; --ink-2:#3D4C48;
+    --muted:#6B7A76; --rule:#DCE3DE; --rule-soft:#E9EEEA;
+    --s1:#0B7F63; --s2:#B4531F;           /* validated categorical pair */
+    --accent:#0B7F63; --accent-soft:#0B7F631A;
+    --shadow:0 1px 2px #17211F0D, 0 8px 24px #17211F08;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0E1513; --surface:#151D1B; --ink:#E4EAE6; --ink-2:#B9C5C0;
+      --muted:#8B9A95; --rule:#26302D; --rule-soft:#1D2624;
+      --s1:#35A288; --s2:#D2793C;
+      --accent:#35A288; --accent-soft:#35A28821;
+      --shadow:0 1px 2px #0006, 0 8px 24px #0004;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E1513; --surface:#151D1B; --ink:#E4EAE6; --ink-2:#B9C5C0;
+    --muted:#8B9A95; --rule:#26302D; --rule-soft:#1D2624;
+    --s1:#35A288; --s2:#D2793C; --accent:#35A288; --accent-soft:#35A28821;
+    --shadow:0 1px 2px #0006, 0 8px 24px #0004;
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F6F3; --surface:#FFFFFF; --ink:#17211F; --ink-2:#3D4C48;
+    --muted:#6B7A76; --rule:#DCE3DE; --rule-soft:#E9EEEA;
+    --s1:#0B7F63; --s2:#B4531F; --accent:#0B7F63; --accent-soft:#0B7F631A;
+    --shadow:0 1px 2px #17211F0D, 0 8px 24px #17211F08;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:ui-sans-serif,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:48px 28px 96px}
+  h1,h2,h3{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    text-wrap:balance; margin:0; font-weight:600; letter-spacing:-.01em}
+  h1{font-size:clamp(30px,4.4vw,44px); line-height:1.12}
+  h2{font-size:23px; line-height:1.25}
+  h3{font-size:16.5px}
+  p{margin:0}
+  a{color:var(--accent)}
+  .eyebrow{font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--muted); font-weight:600}
+  .lede{font-size:17.5px; color:var(--ink-2); max-width:64ch; margin-top:14px}
+  .mono{font-family:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums}
+
+  header.top{border-bottom:1px solid var(--rule); padding-bottom:28px}
+  .stamp{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:20px;
+    font-size:12.5px; color:var(--muted)}
+  .stamp span{display:inline-flex; align-items:center; gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+
+  section{margin-top:52px}
+  .sec-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+    border-bottom:1px solid var(--rule-soft); padding-bottom:12px; margin-bottom:22px}
+  .sec-head p{color:var(--muted); font-size:13.5px}
+
+  /* ---- stat band ---- */
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px;
+    background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+  .stat{background:var(--surface); padding:18px 18px 16px}
+  .stat .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .stat .v{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:34px; line-height:1.05; margin-top:8px; font-variant-numeric:tabular-nums}
+  .stat .s{font-size:12.5px; color:var(--muted); margin-top:4px}
+  .stat.good .v{color:var(--accent)}
+
+  /* ---- tiers ---- */
+  .tiers{display:flex; flex-direction:column; gap:1px; background:var(--rule);
+    border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+  .tier{background:var(--surface); padding:16px 18px; display:grid;
+    grid-template-columns:34px 1fr; gap:16px; align-items:start}
+  .tier .mark{font-family:ui-monospace,Consolas,monospace; font-size:13px; font-weight:700;
+    color:var(--accent); background:var(--accent-soft); border-radius:2px;
+    text-align:center; padding:3px 0; margin-top:2px}
+  .tier h3{margin-bottom:3px}
+  .tier .why{color:var(--ink-2); font-size:14px}
+  .tier .seqs{margin-top:8px; font-size:12.5px; color:var(--muted)}
+  .tier .seqs b{color:var(--ink-2); font-weight:600}
+
+  /* ---- table ---- */
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:760px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--rule-soft); white-space:nowrap}
+  th{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+    font-weight:600; background:var(--surface); position:sticky; top:0}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:var(--accent-soft)}
+  td.num{text-align:right; font-family:ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums}
+  .meter{display:flex; align-items:center; gap:8px}
+  .meter .bar{width:74px; height:7px; border-radius:4px; background:var(--rule); overflow:hidden; flex:none}
+  .meter .fill{height:100%; border-radius:4px; background:var(--accent)}
+  .meter .n{font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--muted)}
+  .chip{display:inline-block; font-size:11px; padding:1px 7px; border-radius:2px;
+    border:1px solid var(--rule); color:var(--muted); font-family:ui-monospace,Consolas,monospace}
+
+  /* ---- findings ---- */
+  .finding{border-left:2px solid var(--accent); padding-left:18px; margin-top:26px}
+  .finding h3{margin-bottom:6px}
+  .finding p{color:var(--ink-2); max-width:70ch; font-size:14.5px}
+  .evidence{margin-top:10px; font-family:ui-monospace,Consolas,monospace; font-size:12.5px;
+    color:var(--muted); background:var(--rule-soft); padding:10px 12px; border-radius:3px;
+    overflow-x:auto; white-space:pre; line-height:1.55}
+
+  /* ---- chart ---- */
+  figure{margin:26px 0 0; background:var(--surface); border:1px solid var(--rule);
+    border-radius:3px; padding:18px 18px 12px}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2); margin-bottom:10px}
+  .legend i{display:inline-block; width:13px; height:2.5px; border-radius:2px; vertical-align:middle; margin-right:7px}
+  figcaption{font-size:12.5px; color:var(--muted); margin-top:10px; max-width:74ch}
+  #chart{width:100%; height:250px; display:block; touch-action:none}
+  .tip{position:fixed; pointer-events:none; opacity:0; transition:opacity .1s;
+    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+    box-shadow:var(--shadow); padding:8px 10px; font-size:12.5px; z-index:20;
+    font-family:ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums}
+  .tip b{font-weight:600}
+
+  ol.steps{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1px;
+    background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+  ol.steps li{background:var(--surface); padding:15px 18px}
+  ol.steps h3{margin-bottom:4px}
+  ol.steps p{color:var(--ink-2); font-size:14px; max-width:74ch}
+  ol.steps .tag{font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; margin-bottom:5px}
+
+  footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--rule);
+    font-size:12.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 20px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <nav style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;margin-bottom:26px;padding-bottom:14px;border-bottom:1px solid var(--rule-soft)"><a href="https://claude.ai/code/artifact/39c08068-bbd5-45a3-8247-a1ae1d9ad6a3">Dashboard</a><a href="https://claude.ai/code/artifact/8807d80f-ba35-47a2-a1ad-05becf34fb7d">Method</a><a href="https://claude.ai/code/artifact/c60cd164-212f-4c21-85e1-3c9e0e3abc9a">The mathematics</a></nav>
+  <p class="eyebrow">oeis-diophantine-3 · session 5 · project report</p>
+  <h1>Fifteen stuck sequences, one construction</h1>
+  <p class="lede">Both predecessor repos ended on the same open problem — the class-number-3
+  construction, called “highest value, and genuinely hard”. The obstruction was not the class
+  number. It was insisting the representation count be a <em>scalar</em> multiplicative function.
+  In the group ring <span class="mono">Z[Cl(Δ)]</span> it is multiplicative for every discriminant,
+  and the whole family collapses at once.</p>
+  <div class="stamp">
+    <span><i class="dot"></i>15 entries · 9 distinct forms</span>
+    <span>class numbers h = 1, 2, 3 · both signs of Δ</span>
+    <span>nothing submitted to OEIS</span>
+  </div>
+</header>
+
+<section>
+  <div class="stats">
+    <div class="stat"><div class="k">OEIS publishes</div><div class="v">264</div><div class="s">terms across all 15</div></div>
+    <div class="stat good"><div class="k">Now held</div><div class="v">37,515</div><div class="s">complete a(0)…a(2500) each</div></div>
+    <div class="stat"><div class="k">Re-counted</div><div class="v">8,531</div><div class="s">by an independent algorithm</div></div>
+    <div class="stat good"><div class="k">Mismatches</div><div class="v">0</div><div class="s">across every check run</div></div>
+    <div class="stat"><div class="k">Search bound</div><div class="v">none</div><div class="s">terms reach 10<sup>2579</sup></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What made each one hard</h2>
+    <p>The tiers are the historical order in which each became solvable — not a ranking</p>
+  </div>
+  <div class="tiers">
+    <div class="tier">
+      <div class="mark">A</div>
+      <div>
+        <h3>Class number one</h3>
+        <p class="why">Every ideal of norm <span class="mono">k</span> lies in one class, so the count is a plain
+        multiplicative function. This is the case repo 1 solved, and the only case it could.</p>
+        <p class="seqs"><b>8 entries</b> · A328151, A374158, A374159, A374090, A374094, A374285, A374286, A300419</p>
+      </div>
+    </div>
+    <div class="tier">
+      <div class="mark">B</div>
+      <div>
+        <h3>One class per genus</h3>
+        <p class="why">h &gt; 1, but every class has order ≤ 2, so a genus character decides the count.
+        Repo 2’s refinement — correct, and still narrower than the truth.</p>
+        <p class="seqs"><b>1 entry</b> · A374288 &nbsp;(Δ = −20, h = 2)</p>
+      </div>
+    </div>
+    <div class="tier">
+      <div class="mark">C</div>
+      <div>
+        <h3>Class number three — the named open problem</h3>
+        <p class="why">h = 3 is odd, so one genus holds all three classes and characters give no purchase.
+        Both repos stopped here. The group ring does not care: 61 and 55 sieve-bound terms became 501 constructed ones.</p>
+        <p class="seqs"><b>2 entries</b> · A374160 (Δ = −44), A374161 (Δ = −76)</p>
+      </div>
+    </div>
+    <div class="tier">
+      <div class="mark">D</div>
+      <div>
+        <h3>Indefinite forms</h3>
+        <p class="why">Δ = +5, so the unit group is infinite and both repos filed it as “needs the fundamental
+        unit of Q(√5) — new mathematics”. It needs none: the entries constrain x, y &gt; 0, and that
+        <em>region</em> holds exactly one representative per ideal except on squares.</p>
+        <p class="seqs"><b>3 entries</b> · A374091, A374095, A374275</p>
+      </div>
+    </div>
+    <div class="tier">
+      <div class="mark">E</div>
+      <div>
+        <h3>Never triaged</h3>
+        <p class="why">Not hard at all — simply missed. A fourth counting convention on the hexagonal form
+        that neither earlier triage pass scanned for, found by sweeping all 398,020 corpus entries.</p>
+        <p class="seqs"><b>1 entry</b> · A198799</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>The fifteen</h2>
+    <p>Verified = terms re-counted by direct enumeration (√k work, so it stops around 10<sup>23</sup>)</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Entry</th><th>Form</th><th class="num">Δ</th><th class="num">h</th><th>Convention</th>
+        <th class="num">OEIS</th><th class="num">Held</th><th>Independently verified</th><th class="num">Blocking term</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Patterns worth keeping</h2>
+    <p>Three that fell out of having all fifteen in one engine</p>
+  </div>
+
+  <div class="finding">
+    <h3>Higher class number makes the terms <em>smaller</em></h3>
+    <p>Counter-intuitive, and clear once you see it. A larger class group gives the minimiser more
+    distinct factorisation patterns that hit a given count, so it is rarely forced onto a single prime
+    at a huge exponent. At h = 1 the terms blow up on prime n — a(n) then needs one split prime raised
+    to 2n−2 — while at h = 3 the curve stays almost flat.</p>
+    <figure>
+      <div class="legend">
+        <span><i style="background:var(--s2)"></i>A374158 · Δ = −12 · h = 1</span>
+        <span><i style="background:var(--s1)"></i>A374160 · Δ = −44 · h = 3</span>
+      </div>
+      <svg id="chart" role="img" aria-label="Digits of a(n) against n: the h=1 sequence spikes to 2079 digits on prime n while the h=3 sequence stays under 94"></svg>
+      <figcaption>Digits of a(n), n = 0…2500. Same construction, same machinery — the only difference is the
+      class group. The indefinite family is the extreme case: A374091 reaches <b>2,580 digits</b>.</figcaption>
+    </figure>
+  </div>
+
+  <div class="finding">
+    <h3>A published conjecture, explained</h3>
+    <p>A374159 carries the comment <em>“Conjecture: All terms are multiple of a(1) = 8.”</em>
+    It holds on all 500 terms we now have — and the construction says why. Δ = −28 is a conductor-2 order
+    in which 2 <em>splits</em> upstairs, so the local factor at 2 is e−1: a factor of 2 in the count costs
+    2³ = 8, where the cheapest split prime available is 11. Powers of two simply dominate every minimiser.
+    8 is also sharp — a(1) = 8 itself is the one term not divisible by 16.</p>
+    <div class="evidence">500 / 500 terms divisible by 8      split primes for Δ = −28:  11, 23, 29, 37, 43, 53
+499 / 500 divisible by 16           the exception is a(1) = 8 itself</div>
+  </div>
+
+  <div class="finding">
+    <h3>These entries are stuck at small numbers, not big ones</h3>
+    <p>The term each entry is blocked on — the first one past its published data — has a median of
+    4.3 × 10⁹, and 14 of the 15 sit below 10¹³. All of them are well inside what an afternoon of sieving
+    reaches. They are stuck because the published programs enumerate representations one at a time, not
+    because the next value is out of reach. That is the founding observation of this project, quantified.</p>
+    <div class="evidence">A374161  a(19) = 8.80e8      A198799  a(28) = 9.01e8      A374286  a(17) = 1.13e9
+A374275  a(13) = 1.91e9      A374158  a(11) = 3.67e9      A374285  a(19) = 4.26e9
+A374160  a(29) = 5.26e9      A374288  a(19) = 5.42e9      A374159  a(29) = 1.18e10</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>What the evidence actually is</h2>
+  <p>Ranked strongest first, as the project’s own rules require</p></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Check</th><th>Coverage</th><th class="num">Result</th></tr></thead>
+      <tbody>
+        <tr><td>Independent re-count (<span class="mono">gpu_verify.py</span>) — shares no mathematics with the construction</td><td>8,531 terms, all 15 entries</td><td class="num">0 mismatch</td></tr>
+        <tr><td>Second independent search — over k, and over the ideal count</td><td>h = 1, 2, 3 and indefinite</td><td class="num">0 disagreement</td></tr>
+        <tr><td>Exhaustive sieve to 10¹², <em>both</em> directions</td><td>7 entries, n ≤ 200</td><td class="num">0 contradiction</td></tr>
+        <tr><td>Group-ring count vs brute-force theta series, every k ≤ 200000</td><td>58 discriminants, h = 1…8</td><td class="num">0 failure</td></tr>
+        <tr><td>Counting convention vs brute force, every k ≤ 200000</td><td>all 15 conventions</td><td class="num">0 mismatch</td></tr>
+        <tr><td>Terms above the verification ceiling (√k &gt; 10¹²)</td><td>most n &gt; ~500</td><td class="num">construction only</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>Where this goes next</h2>
+  <p>The family is finished; the interesting work has moved elsewhere</p></div>
+  <ol class="steps">
+    <li>
+      <p class="tag">Closed — do not reopen</p>
+      <h3>Binary quadratic forms</h3>
+      <p>One engine covers every entry at any class number and either sign of discriminant, with no bound on k.
+      A sweep of all 398,020 corpus entries found no sixteenth. The predecessors’ top-ranked target
+      (“other idoneal discriminants — best value-per-effort”) is closed out: OEIS carries no such entry for
+      any D outside {1, 2, 3, 5, 7, 11, 19}.</p>
+    </li>
+    <li>
+      <p class="tag">Next — same idea, different group</p>
+      <h3>Divisors in a residue class</h3>
+      <p>The content was never “class groups”. Any count that is a character combination of multiplicative
+      functions is a function of the factorisation. Swap <span class="mono">Z[Cl(Δ)]</span> for
+      <span class="mono">Z[(Z/m)*]</span> and the same machinery constructs A343105 — “smallest number with
+      exactly n divisors of the form 8k+3”, 39 published terms. No GPU needed; this is CPU-cheap.</p>
+    </li>
+    <li>
+      <p class="tag">Next — where the GPU actually changes the frontier</p>
+      <h3>Genuinely combinatorial searches</h3>
+      <p>Sequences with no multiplicative structure have depth as their only lever, which is exactly what a GPU
+      buys. Equal sums of like powers (the Waring work, A342893–A342901, A345864), congruence-pruned tuple
+      searches (A384132, A290400), and the stalled frontiers A135578 and A306968–70. The published bounds on
+      all of these are CPU-era.</p>
+    </li>
+    <li>
+      <p class="tag">Free adjacency — already computed</p>
+      <h3>A327796 / A327797</h3>
+      <p>The x and y values realising A300419(n), which we hold to n = 2500. Cornacchia on the known
+      factorisation yields the representations <em>and</em> per-term certificates — the strongest rung on the
+      validation ladder, and something this class has never had.</p>
+    </li>
+  </ol>
+</section>
+
+<footer>
+  <span>oeis-diophantine-3 · <span class="mono">gitlab.com/oeis-test-storer-group/diophantine-lists-3</span></span>
+  <span>Nothing here has been submitted to OEIS — several entries are actively worked by others</span>
+</footer>
+
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script id="rows" type="application/json">[{"a": "A198799", "delta": -3, "h": 1, "f": 1, "b": 1, "c": 1, "conv": "lein", "pub": 28, "held": 2501, "ver": 380, "tier": "E", "block": "9.01e+08", "bdig": 9}, {"a": "A300419", "delta": -3, "h": 1, "f": 1, "b": 1, "c": 1, "conv": "gepos", "pub": 26, "held": 2501, "ver": 426, "tier": "A", "block": "3.42e+12", "bdig": 13}, {"a": "A328151", "delta": -4, "h": 1, "f": 1, "b": 0, "c": 1, "conv": "pos", "pub": 29, "held": 2501, "ver": 507, "tier": "A", "block": "7.45e+19", "bdig": 20}, {"a": "A374090", "delta": -3, "h": 1, "f": 1, "b": 1, "c": 1, "conv": "ordered", "pub": 22, "held": 2501, "ver": 418, "tier": "A", "block": "3.67e+09", "bdig": 10}, {"a": "A374091", "delta": 5, "h": 1, "f": 1, "b": 3, "c": 1, "conv": "ordered", "pub": 11, "held": 2501, "ver": 298, "tier": "D", "block": "1.3e+11", "bdig": 12}, {"a": "A374094", "delta": -3, "h": 1, "f": 1, "b": 1, "c": 1, "conv": "lt", "pub": 11, "held": 2501, "ver": 377, "tier": "A", "block": "3.67e+09", "bdig": 10}, {"a": "A374095", "delta": 5, "h": 1, "f": 1, "b": 3, "c": 1, "conv": "lt", "pub": 11, "held": 2501, "ver": 259, "tier": "D", "block": "4.93e+11", "bdig": 12}, {"a": "A374158", "delta": -12, "h": 1, "f": 2, "b": 0, "c": 3, "conv": "pos", "pub": 11, "held": 2501, "ver": 434, "tier": "A", "block": "3.67e+09", "bdig": 10}, {"a": "A374159", "delta": -28, "h": 1, "f": 2, "b": 0, "c": 7, "conv": "pos", "pub": 29, "held": 2501, "ver": 870, "tier": "A", "block": "1.18e+10", "bdig": 11}, {"a": "A374160", "delta": -44, "h": 3, "f": 2, "b": 0, "c": 11, "conv": "pos", "pub": 29, "held": 2501, "ver": 1345, "tier": "C", "block": "5.26e+09", "bdig": 10}, {"a": "A374161", "delta": -76, "h": 3, "f": 2, "b": 0, "c": 19, "conv": "pos", "pub": 19, "held": 2501, "ver": 1117, "tier": "C", "block": "8.79e+08", "bdig": 9}, {"a": "A374275", "delta": 5, "h": 1, "f": 1, "b": 3, "c": 1, "conv": "lein", "pub": 13, "held": 2501, "ver": 262, "tier": "D", "block": "1.91e+09", "bdig": 10}, {"a": "A374285", "delta": -8, "h": 1, "f": 1, "b": 0, "c": 2, "conv": "nonneg", "pub": 19, "held": 2501, "ver": 683, "tier": "A", "block": "4.26e+09", "bdig": 10}, {"a": "A374286", "delta": -12, "h": 1, "f": 2, "b": 0, "c": 3, "conv": "nonneg", "pub": 17, "held": 2501, "ver": 434, "tier": "A", "block": "1.13e+09", "bdig": 10}, {"a": "A374288", "delta": -20, "h": 2, "f": 1, "b": 0, "c": 5, "conv": "nonneg", "pub": 19, "held": 2501, "ver": 721, "tier": "B", "block": "5.42e+09", "bdig": 10}]</script>
+<script id="series" type="application/json">{"h1": [1, 1, 2, 2, 3, 5, 3, 4, 5, 4, 6, 10, 4, 5, 8, 6, 7, 10, 5, 11, 8, 7, 7, 20, 6, 10, 13, 6, 9, 25, 7, 8, 8, 11, 16, 11, 7, 9, 16, 12, 8, 35, 9, 25, 13, 8, 21, 20, 7, 12, 11, 16, 11, 46, 8, 15, 11, 17, 13, 21, 8, 35, 13, 10, 10, 16, 12, 9, 18, 21, 13, 22, 8, 13, 33, 10, 17, 17, 14, 45, 11, 9, 14, 71, 10, 19, 38, 15, 14, 76, 9, 19, 23, 25, 11, 21, 9, 16, 15, 13, 13, 31, 17, 22, 16, 12, 47, 40, 9, 62, 16, 33, 11, 96, 19, 16, 28, 15, 52, 22, 10, 11, 17, 29, 30, 15, 11, 19, 12, 38, 18, 111, 13, 24, 59, 11, 18, 19, 22, 29, 14, 41, 21, 23, 10, 30, 64, 14, 14, 32, 12, 86, 21, 18, 18, 32, 15, 13, 69, 35, 13, 27, 11, 92, 38, 15, 34, 61, 12, 25, 21, 20, 24, 147, 27, 16, 16, 51, 21, 152, 11, 21, 20, 53, 25, 37, 29, 14, 38, 12, 23, 162, 11, 39, 84, 17, 17, 71, 15, 23, 14, 39, 12, 32, 19, 40, 56, 23, 18, 28, 13, 42, 24, 58, 22, 42, 11, 29, 39, 63, 15, 29, 34, 126, 14, 13, 98, 22, 20, 19, 26, 18, 30, 198, 16, 45, 47, 25, 23, 203, 12, 26, 23, 12, 55, 19, 37, 17, 31, 72, 17, 213, 13, 25, 109, 20, 14, 91, 39, 39, 19, 28, 16, 44, 15, 50, 25, 77, 60, 23, 12, 153, 21, 19, 54, 20, 24, 36, 120, 30, 16, 238, 42, 14, 64, 22, 25, 29, 12, 33, 31, 56, 18, 248, 16, 55, 36, 16, 128, 34, 13, 44, 25, 87, 23, 53, 20, 39, 20, 88, 24, 82, 17, 27, 49, 15, 70, 111, 25, 37, 15, 92, 29, 35, 12, 22, 140, 93, 40, 47, 17, 28, 28, 35, 143, 62, 13, 14, 27, 88, 23, 38, 21, 21, 41, 25, 19, 122, 29, 197, 18, 18, 18, 92, 53, 65, 50, 23, 153, 304, 13, 37, 34, 22, 14, 54, 54, 18, 26, 38, 30, 52, 30, 73, 28, 16, 45, 39, 14, 31, 25, 98, 22, 63, 13, 22, 165, 35, 38, 54, 18, 30, 18, 112, 169, 72, 16, 50, 170, 24, 16, 72, 31, 40, 89, 14, 34, 43, 20, 20, 42, 117, 19, 57, 25, 76, 20, 119, 30, 355, 15, 238, 29, 28, 50, 25, 63, 23, 94, 24, 42, 365, 13, 32, 35, 30, 84, 21, 64, 248, 19, 17, 30, 375, 35, 17, 59, 127, 16, 57, 15, 43, 99, 129, 88, 24, 22, 56, 117, 21, 28, 73, 19, 90, 31, 30, 199, 30, 18, 64, 47, 59, 16, 48, 69, 27, 25, 49, 36, 122, 13, 46, 167, 28, 24, 87, 14, 21, 57, 86, 20, 416, 39, 43, 32, 18, 33, 68, 73, 36, 18, 67, 61, 64, 14, 91, 33, 26, 98, 431, 22, 38, 16, 23, 21, 92, 40, 27, 40, 148, 21, 132, 30, 295, 114, 17, 19, 45, 17, 45, 52, 54, 27, 49, 78, 24, 62, 46, 229, 25, 14, 36, 38, 154, 23, 98, 21, 66, 119, 55, 22, 45, 25, 40, 236, 37, 52, 193, 31, 51, 18, 27, 17, 33, 44, 38, 98, 16, 65, 74, 24, 110, 26, 64, 44, 30, 13, 21, 35, 71, 33, 78, 85, 57, 67, 20, 38, 49, 17, 47, 57, 32, 38, 502, 17, 27, 129, 170, 26, 103, 15, 339, 45, 60, 40, 27, 88, 15, 25, 33, 43, 54, 21, 346, 261, 41, 22, 34, 90, 57, 35, 26, 75, 67, 18, 21, 158, 29, 136, 50, 16, 356, 35, 159, 45, 68, 49, 24, 38, 64, 16, 542, 93, 25, 30, 42, 36, 43, 14, 62, 23, 34, 32, 553, 33, 40, 41, 65, 49, 558, 18, 18, 54, 29, 75, 29, 37, 50, 145, 100, 64, 64, 15, 380, 80, 16, 28, 233, 74, 90, 24, 71, 23, 578, 23, 121, 23, 24, 22, 59, 27, 390, 150, 20, 295, 103, 30, 33, 118, 198, 20, 76, 19, 52, 20, 46, 135, 93, 54, 48, 39, 71, 26, 52, 24, 28, 155, 46, 305, 608, 14, 45, 37, 205, 29, 35, 23, 87, 23, 15, 69, 35, 56, 140, 109, 19, 28, 59, 40, 43, 40, 31, 20, 629, 32, 67, 317, 38, 29, 98, 17, 144, 46, 127, 40, 133, 16, 90, 74, 32, 26, 644, 61, 100, 128, 23, 69, 64, 14, 24, 24, 219, 92, 35, 42, 37, 87, 39, 149, 56, 20, 72, 40, 31, 20, 138, 35, 19, 90, 224, 44, 103, 18, 44, 198, 51, 55, 40, 26, 48, 18, 79, 95, 74, 61, 32, 42, 39, 24, 684, 15, 457, 26, 230, 45, 143, 22, 57, 348, 22, 43, 78, 51, 57, 92, 21, 45, 284, 26, 74, 77, 235, 21, 30, 120, 147, 31, 33, 50, 86, 17, 28, 289, 210, 182, 31, 45, 29, 52, 241, 17, 57, 42, 481, 61, 25, 96, 26, 25, 164, 45, 43, 29, 143, 15, 152, 368, 34, 37, 79, 32, 71, 97, 86, 42, 23, 66, 21, 218, 249, 21, 81, 18, 47, 32, 38, 169, 69, 37, 115, 82, 19, 26, 61, 129, 157, 18, 34, 381, 58, 16, 64, 41, 45, 62, 158, 45, 26, 91, 89, 25, 771, 23, 34, 83, 58, 53, 118, 22, 518, 30, 102, 42, 74, 21, 42, 110, 56, 33, 37, 34, 27, 200, 264, 82, 32, 19, 20, 66, 266, 30, 234, 43, 49, 57, 18, 50, 324, 71, 76, 28, 157, 27, 806, 50, 26, 206, 37, 65, 105, 15, 61, 27, 84, 207, 168, 29, 44, 26, 35, 89, 87, 16, 61, 414, 22, 36, 42, 107, 87, 22, 96, 115, 244, 40, 67, 45, 48, 33, 62, 20, 559, 35, 281, 31, 164, 74, 28, 424, 38, 20, 31, 144, 69, 49, 63, 63, 44, 16, 569, 86, 40, 18, 857, 27, 37, 110, 47, 89, 862, 23, 194, 71, 39, 17, 45, 24, 81, 38, 22, 94, 872, 42, 58, 53, 28, 42, 70, 90, 22, 23, 295, 122, 134, 31, 33, 40, 296, 116, 887, 19, 593, 226, 21, 46, 184, 18, 47, 46, 151, 53, 174, 30, 599, 28, 66, 50, 63, 79, 51, 97, 25, 27, 63, 154, 47, 231, 305, 26, 84, 16, 65, 370, 38, 206, 39, 89, 34, 25, 25, 99, 90, 22, 17, 179, 68, 54, 375, 39, 140, 23, 312, 21, 933, 27, 34, 76, 41, 238, 274, 39, 32, 84, 53, 473, 106, 33, 131, 52, 317, 20, 71, 29, 97, 159, 19, 478, 35, 45, 215, 41, 39, 132, 99, 17, 197, 67, 28, 33, 75, 25, 145, 390, 111, 28, 98, 164, 25, 45, 40, 32, 54, 15, 650, 490, 23, 36, 90, 166, 73, 35, 43, 36, 164, 86, 41, 58, 330, 55, 149, 21, 71, 68, 39, 33, 50, 19, 102, 49, 114, 58, 135, 52, 33, 40, 73, 102, 31, 19, 65, 29, 337, 52, 45, 171, 207, 37, 27, 58, 104, 17, 80, 49, 101, 47, 209, 62, 31, 133, 41, 28, 154, 89, 684, 300, 17, 26, 416, 34, 70, 60, 44, 56, 1034, 23, 25, 199, 347, 23, 1039, 42, 694, 23, 120, 523, 36, 91, 22, 525, 58, 36, 80, 28, 108, 130, 76, 84, 68, 20, 29, 23, 121, 146, 116, 30, 34, 138, 355, 52, 204, 18, 56, 95, 43, 74, 37, 143, 30, 96, 46, 28, 69, 50, 78, 28, 26, 40, 73, 65, 721, 18, 60, 26, 145, 95, 223, 103, 26, 32, 1090, 44, 44, 38, 181, 549, 44, 16, 151, 59, 120, 25, 135, 36, 78, 143, 33, 70, 446, 96, 34, 118, 41, 22, 100, 67, 228, 50, 49, 250, 45, 20, 745, 49, 20, 283, 56, 31, 57, 77, 376, 31, 34, 38, 71, 51, 81, 20, 100, 191, 60, 65, 130, 65, 86, 17, 36, 571, 29, 58, 81, 18, 63, 30, 47, 46, 234, 100, 75, 42, 131, 26, 335, 101, 72, 41, 25, 579, 466, 25, 72, 123, 191, 25, 101, 196, 26, 45, 24, 61, 108, 28, 262, 78, 391, 74, 155, 22, 41, 297, 342, 92, 43, 32, 176, 55, 35, 31, 54, 200, 265, 22, 396, 31, 77, 21, 243, 54, 65, 22, 1192, 47, 89, 105, 136, 59, 146, 56, 19, 601, 49, 68, 40, 72, 75, 50, 27, 53, 487, 26, 806, 30, 51, 156, 102, 147, 38, 43, 35, 123, 1217, 16, 60, 96, 46, 40, 38, 206, 168, 158, 30, 37, 1227, 25, 37, 616, 88, 25, 61, 17, 124, 70, 107, 24, 36, 57, 253, 360, 142, 87, 110, 21, 97, 30, 362, 70, 61, 41, 171, 627, 44, 41, 1252, 32, 61, 55, 21, 630, 32, 34, 282, 133, 68, 173, 118, 66, 39, 31, 423, 39, 1268, 19, 30, 512, 115, 48, 49, 135, 64, 42, 426, 65, 1278, 17, 94, 210, 91, 287, 76, 34, 42, 28, 29, 37, 245, 111, 62, 101, 58, 167, 47, 25, 863, 327, 70, 40, 110, 16, 44, 170, 26, 25, 82, 220, 24, 168, 93, 655, 37, 43, 873, 38, 52, 30, 215, 41, 70, 250, 87, 57, 1318, 22, 196, 26, 107, 41, 118, 33, 33, 22, 108, 140, 386, 54, 36, 108, 20, 172, 91, 53, 22, 75, 46, 105, 1339, 20, 135, 67, 45, 301, 45, 52, 77, 31, 56, 676, 42, 27, 67, 60, 50, 20, 1354, 80, 201, 342, 44, 27, 548, 62, 63, 34, 155, 44, 396, 230, 40, 92, 25, 84, 111, 17, 64, 66, 179, 37, 28, 232, 38, 46, 157, 145, 205, 23, 26, 59, 98, 349, 120, 24, 138, 45, 71, 69, 79, 45, 53, 115, 58, 94, 101, 22, 122, 61, 46, 701, 55, 28, 33, 123, 75, 43, 140, 33, 937, 23, 40, 31, 54, 111, 54, 148, 472, 33, 210, 34, 67, 358, 51, 318, 87, 18, 70, 58, 30, 359, 290, 240, 20, 183, 125, 32, 96, 47, 954, 31, 101, 41, 93, 113, 98, 28, 19, 58, 125, 66, 44, 723, 482, 62, 235, 26, 82, 97, 150, 112, 27, 27, 104, 421, 165, 46, 275, 44, 326, 368, 31, 731, 145, 16, 38, 153, 489, 24, 1465, 35, 89, 39, 127, 72, 74, 34, 44, 57, 78, 99, 300, 87, 202, 43, 57, 24, 106, 67, 148, 48, 23, 375, 56, 250, 40, 23, 242, 50, 82, 20, 102, 748, 48, 33, 84, 57, 39, 378, 170, 32, 71, 39, 74, 116, 503, 84, 130, 21, 66, 117, 28, 62, 33, 76, 1008, 158, 172, 20, 150, 36, 29, 383, 508, 60, 116, 18, 1015, 65, 509, 50, 42, 46, 132, 102, 58, 78, 1531, 40, 42, 181, 27, 153, 92, 91, 109, 27, 514, 19, 447, 25, 72, 84, 35, 70, 84, 59, 45, 199, 55, 120, 316, 24, 24, 779, 252, 31, 138, 73, 103, 51, 43, 76, 629, 22, 84, 44, 51, 35, 111, 92, 58, 35, 524, 59, 38, 35, 80, 33, 29, 107, 55, 265, 77, 125, 83, 33, 186, 21, 1056, 162, 22, 67, 639, 47, 158, 50, 32, 217, 235, 137, 44, 32, 51, 58, 1597, 19, 86, 51, 464, 358, 206, 72, 36, 77, 142, 30, 1607, 271, 48, 28, 113, 68, 104, 52, 77, 168, 27, 27, 122, 39, 329, 408, 67, 125, 106, 17, 61, 62, 543, 49, 28, 96, 85, 52, 209, 28, 1633, 31, 1090, 119, 45, 28, 41, 37, 242, 90, 309, 43, 48, 17, 334, 127, 59, 368, 477, 24, 1100, 60, 37, 828, 44, 57, 35, 89, 553, 24, 86, 97, 33, 418, 117, 42, 245, 42, 99, 173, 68, 46, 1668, 49, 77, 35, 107, 63, 130, 21, 247, 70, 560, 22, 49, 147, 55, 71, 32, 175, 165, 76, 377, 845, 30, 33, 62, 39, 70, 22, 51, 33, 1694, 145, 168, 70, 78, 101, 50, 64, 131, 37, 64, 67, 46, 18, 232, 321, 494, 94, 87, 287, 41, 36, 19, 170, 689, 29, 49, 39, 219, 114, 84, 101, 49, 434, 90, 133, 1724, 25, 147, 61, 123, 71, 351, 40, 26, 19, 579, 47, 255, 26, 72, 83, 122, 222, 39, 24, 92, 95, 54, 25, 1744, 44, 26, 875, 60, 55, 1749, 30, 113, 44, 50, 72, 81, 150, 91, 880, 23, 25, 177, 34, 394, 331, 123, 104, 150, 33, 175, 35, 54, 36, 42, 124, 119, 117, 201, 889, 49, 20, 173, 60, 514, 76, 361, 22, 52, 48, 53, 66, 131, 20, 1191, 137, 48, 48, 34, 208, 138, 55, 94, 244, 149, 57, 31, 900, 61, 30, 1800, 67, 39, 52, 73, 96, 64, 81, 29, 60, 52, 99, 1810, 27, 1208, 65, 29, 53, 116, 155, 267, 49, 206, 47, 126, 151, 370, 28, 609, 86, 126, 18, 122, 67, 95, 47, 126, 39, 38, 234, 207, 41, 132, 83, 32, 921, 36, 27, 75, 26, 1228, 89, 616, 89, 91, 24, 46, 926, 19, 466, 158, 69, 272, 123, 56, 35, 376, 58, 41, 142, 128, 25, 56, 313, 109, 49, 23, 934, 750, 29, 92, 36, 69, 60, 217, 43, 185, 52, 626, 45, 187, 40, 1252, 99, 34, 124, 86, 55, 23, 474, 34, 195, 107, 35, 44, 136, 132, 54, 160, 55, 1262, 21, 77, 38, 548, 30, 385, 951, 62, 243, 161, 20, 87, 67, 636, 37, 52, 47, 48, 956, 216, 104, 43, 41, 96, 244, 134, 101, 771, 19, 93, 199, 68, 69, 1922, 323, 30, 164, 35, 41, 93, 27, 30, 86, 644, 486, 392, 113, 61, 30, 100, 200, 99, 122, 129, 67, 26, 47, 781, 326, 41, 33, 65, 264, 55, 17, 76, 563, 78, 27, 159, 24, 81, 38, 221, 91, 367, 140, 94, 74, 655, 36, 190, 44, 111, 81, 38, 54, 36, 88, 135, 131, 42, 60, 316, 56, 151, 70, 36, 150, 1977, 23, 195, 796, 73, 253, 70, 40, 269, 70, 34, 52, 1988, 21, 167, 104, 139, 50, 64, 116, 35, 60, 666, 22, 136, 171, 54, 35, 226, 42, 112, 74, 47, 80, 104, 1005, 33, 21, 273, 68, 66, 31, 377, 338, 199, 133, 54, 77, 46, 172, 58, 209, 675, 38, 2023, 29, 410, 510, 59, 51, 2028, 19, 30, 64, 52, 200, 51, 342, 98, 49, 74, 211, 65, 63, 128, 80, 33, 134, 821, 43, 95, 30, 172, 39, 150, 91, 27, 202, 685, 517, 142, 19, 42, 28, 166, 460, 417, 36, 27, 72, 60, 62, 237, 45, 158, 57, 135, 204, 91, 25, 85, 27, 58, 99, 201, 348, 420, 52, 25, 137, 2079, 44, 116, 176, 333, 25, 49, 121, 52, 525, 390, 37, 306, 66, 100, 99, 24, 121, 842, 60, 47, 38, 606, 82, 176, 29, 73, 109, 177, 76, 132, 78, 97, 86, 238, 70, 58, 22, 42, 242, 30, 24], "h3": [1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 7, 5, 6, 6, 6, 6, 7, 6, 8, 6, 7, 7, 9, 7, 7, 9, 8, 7, 10, 7, 8, 7, 9, 10, 8, 8, 9, 10, 10, 8, 12, 8, 10, 9, 9, 11, 11, 8, 10, 9, 11, 9, 11, 9, 10, 9, 12, 11, 12, 9, 13, 11, 10, 9, 11, 10, 10, 11, 12, 10, 14, 9, 11, 12, 10, 12, 11, 11, 15, 10, 11, 11, 14, 10, 12, 12, 12, 11, 16, 10, 12, 12, 12, 11, 14, 10, 12, 11, 11, 10, 16, 13, 14, 12, 11, 12, 13, 11, 16, 12, 13, 10, 15, 13, 13, 14, 12, 13, 14, 11, 12, 14, 16, 16, 13, 11, 14, 11, 14, 12, 14, 12, 13, 13, 12, 13, 14, 14, 15, 11, 14, 15, 15, 11, 17, 14, 12, 13, 13, 12, 18, 14, 14, 13, 19, 13, 12, 17, 14, 11, 17, 12, 16, 16, 13, 15, 15, 11, 17, 14, 14, 14, 15, 15, 14, 12, 15, 16, 19, 12, 16, 14, 17, 14, 17, 14, 14, 14, 13, 15, 18, 12, 18, 21, 14, 13, 23, 13, 17, 12, 15, 13, 17, 15, 16, 16, 16, 13, 18, 13, 20, 14, 14, 14, 17, 12, 18, 18, 16, 13, 18, 15, 31, 12, 13, 17, 16, 15, 16, 17, 14, 16, 16, 14, 15, 15, 18, 16, 20, 12, 19, 16, 14, 17, 15, 18, 14, 18, 17, 14, 25, 13, 18, 18, 15, 12, 18, 15, 20, 14, 16, 15, 27, 13, 17, 15, 15, 15, 18, 13, 22, 15, 15, 27, 16, 16, 16, 16, 16, 13, 22, 16, 14, 20, 17, 17, 20, 13, 21, 19, 19, 15, 16, 14, 18, 15, 15, 15, 15, 13, 20, 18, 19, 16, 20, 16, 20, 14, 17, 19, 22, 14, 19, 28, 14, 19, 19, 16, 22, 13, 16, 18, 18, 14, 17, 18, 18, 18, 21, 14, 20, 17, 17, 17, 18, 13, 15, 18, 19, 15, 16, 16, 18, 16, 19, 16, 17, 17, 23, 15, 15, 14, 29, 17, 19, 20, 17, 21, 21, 14, 24, 18, 17, 15, 19, 18, 17, 17, 19, 18, 21, 16, 16, 16, 16, 16, 23, 14, 21, 17, 19, 17, 22, 13, 17, 23, 17, 23, 33, 15, 22, 14, 17, 24, 22, 15, 21, 21, 17, 14, 29, 16, 21, 19, 15, 19, 27, 16, 17, 17, 17, 17, 22, 18, 20, 15, 18, 20, 32, 14, 23, 21, 17, 16, 18, 16, 16, 16, 18, 19, 25, 14, 19, 19, 20, 20, 18, 18, 30, 15, 15, 20, 22, 17, 16, 33, 17, 14, 24, 15, 21, 19, 19, 19, 18, 17, 21, 20, 17, 19, 43, 16, 29, 18, 19, 18, 18, 16, 17, 17, 31, 16, 27, 20, 19, 17, 17, 22, 25, 14, 26, 25, 20, 17, 18, 15, 18, 19, 19, 17, 21, 20, 26, 21, 16, 20, 24, 19, 21, 16, 19, 24, 27, 15, 22, 20, 19, 20, 32, 17, 23, 14, 17, 19, 21, 17, 20, 22, 19, 16, 27, 17, 17, 17, 17, 17, 28, 15, 28, 19, 19, 17, 17, 17, 19, 17, 23, 24, 20, 15, 22, 22, 20, 17, 23, 17, 27, 29, 20, 17, 28, 18, 21, 18, 18, 18, 22, 17, 30, 15, 18, 17, 23, 18, 22, 21, 16, 21, 29, 18, 23, 18, 21, 24, 21, 14, 18, 23, 24, 21, 24, 21, 21, 18, 17, 18, 18, 16, 23, 20, 23, 18, 50, 16, 20, 17, 17, 17, 31, 15, 29, 22, 18, 21, 20, 21, 17, 18, 21, 22, 31, 18, 22, 22, 19, 16, 24, 19, 24, 23, 20, 24, 24, 16, 19, 28, 21, 27, 29, 16, 27, 21, 22, 20, 20, 18, 20, 24, 18, 15, 23, 18, 20, 20, 20, 20, 28, 15, 29, 18, 21, 19, 20, 20, 20, 20, 19, 22, 24, 16, 17, 25, 21, 19, 20, 19, 19, 19, 34, 20, 30, 15, 50, 24, 16, 20, 27, 20, 23, 17, 20, 17, 18, 17, 30, 19, 20, 18, 31, 20, 28, 19, 17, 19, 21, 19, 24, 25, 20, 17, 45, 17, 28, 16, 19, 31, 26, 19, 21, 21, 22, 21, 32, 19, 21, 23, 24, 22, 22, 15, 24, 25, 27, 20, 20, 19, 24, 17, 17, 21, 25, 20, 20, 20, 18, 19, 25, 21, 28, 20, 22, 18, 28, 18, 20, 18, 18, 18, 23, 17, 26, 18, 28, 26, 24, 16, 35, 23, 21, 19, 85, 21, 21, 21, 19, 24, 24, 15, 20, 19, 21, 24, 25, 19, 25, 25, 23, 36, 27, 17, 42, 26, 19, 16, 32, 19, 18, 26, 26, 24, 25, 16, 23, 23, 21, 22, 26, 18, 31, 15, 18, 30, 29, 18, 23, 22, 23, 21, 56, 17, 21, 21, 26, 28, 23, 18, 22, 22, 18, 19, 19, 19, 26, 19, 19, 24, 26, 20, 39, 22, 20, 17, 22, 20, 22, 21, 19, 32, 33, 16, 21, 27, 25, 27, 22, 19, 23, 18, 23, 18, 27, 18, 18, 18, 20, 18, 22, 20, 23, 21, 26, 23, 30, 16, 22, 21, 21, 21, 32, 22, 31, 22, 23, 27, 20, 20, 18, 33, 19, 16, 33, 17, 31, 22, 22, 23, 24, 19, 26, 25, 18, 21, 37, 19, 25, 16, 19, 25, 25, 16, 23, 22, 24, 21, 23, 21, 21, 21, 22, 20, 49, 19, 24, 22, 22, 22, 23, 19, 34, 20, 23, 25, 44, 18, 23, 41, 21, 20, 29, 21, 22, 20, 20, 20, 21, 17, 20, 19, 19, 19, 31, 28, 31, 19, 17, 29, 29, 22, 33, 21, 22, 19, 23, 20, 22, 24, 26, 25, 27, 16, 24, 21, 19, 28, 28, 22, 25, 19, 22, 20, 20, 17, 25, 28, 20, 21, 28, 21, 33, 18, 21, 23, 30, 22, 27, 28, 24, 22, 36, 18, 25, 23, 26, 23, 26, 21, 22, 23, 21, 18, 23, 21, 33, 28, 22, 28, 29, 16, 25, 24, 26, 18, 22, 21, 24, 22, 22, 28, 33, 19, 57, 24, 19, 16, 22, 19, 22, 21, 21, 22, 28, 20, 28, 28, 22, 24, 31, 20, 19, 17, 20, 25, 24, 19, 19, 19, 27, 19, 30, 18, 45, 30, 19, 29, 49, 17, 27, 30, 33, 21, 26, 21, 26, 19, 21, 19, 19, 18, 34, 21, 20, 19, 25, 25, 24, 26, 24, 21, 33, 17, 36, 24, 24, 24, 24, 21, 26, 19, 20, 25, 54, 18, 19, 30, 23, 31, 35, 22, 34, 19, 22, 20, 37, 20, 24, 27, 24, 20, 20, 20, 24, 20, 24, 24, 24, 19, 32, 32, 19, 16, 38, 19, 34, 25, 19, 25, 25, 20, 25, 24, 27, 23, 23, 18, 24, 23, 22, 24, 38, 20, 26, 25, 23, 20, 25, 23, 20, 26, 26, 23, 34, 16, 29, 29, 20, 24, 27, 26, 43, 23, 21, 25, 38, 23, 23, 23, 23, 20, 26, 19, 35, 19, 20, 20, 22, 17, 29, 24, 21, 22, 29, 28, 25, 20, 25, 27, 24, 18, 37, 21, 24, 19, 31, 19, 19, 19, 20, 37, 33, 17, 28, 31, 30, 24, 31, 20, 24, 23, 24, 21, 25, 22, 23, 22, 18, 20, 31, 22, 30, 24, 29, 32, 71, 19, 21, 23, 24, 20, 36, 21, 34, 18, 21, 31, 25, 21, 20, 26, 25, 24, 26, 22, 32, 26, 24, 25, 25, 18, 24, 20, 21, 33, 29, 22, 26, 31, 28, 28, 38, 17, 34, 34, 29, 23, 25, 24, 24, 22, 21, 22, 43, 20, 27, 22, 22, 26, 33, 19, 44, 17, 20, 21, 24, 20, 25, 36, 21, 22, 31, 22, 22, 22, 28, 55, 27, 17, 40, 30, 23, 20, 39, 23, 31, 21, 22, 21, 22, 21, 24, 22, 28, 21, 36, 21, 31, 24, 25, 25, 31, 18, 35, 27, 19, 26, 24, 23, 26, 21, 25, 22, 28, 21, 21, 21, 22, 19, 28, 35, 34, 22, 20, 28, 32, 17, 26, 55, 24, 26, 26, 18, 31, 21, 24, 27, 29, 22, 33, 31, 22, 19, 40, 22, 36, 19, 20, 19, 33, 19, 34, 32, 24, 21, 56, 24, 22, 20, 21, 32, 34, 22, 30, 30, 38, 21, 23, 19, 21, 20, 28, 23, 32, 21, 26, 26, 22, 25, 33, 22, 27, 19, 22, 24, 46, 19, 28, 32, 21, 18, 28, 20, 28, 28, 35, 27, 26, 21, 19, 23, 23, 23, 27, 24, 36, 24, 22, 34, 28, 20, 28, 22, 22, 25, 34, 26, 26, 24, 24, 24, 52, 17, 30, 26, 29, 27, 27, 29, 29, 22, 23, 22, 22, 20, 27, 48, 22, 19, 32, 19, 26, 23, 29, 21, 26, 22, 23, 22, 22, 22, 33, 20, 25, 21, 24, 27, 25, 23, 33, 38, 30, 23, 60, 24, 39, 24, 19, 27, 24, 20, 32, 22, 24, 19, 20, 20, 22, 20, 25, 24, 42, 19, 25, 28, 22, 21, 27, 30, 28, 27, 30, 26, 61, 18, 27, 44, 26, 25, 25, 23, 28, 20, 22, 27, 37, 23, 23, 23, 32, 23, 31, 20, 32, 26, 26, 26, 27, 17, 28, 49, 21, 20, 27, 23, 22, 26, 24, 26, 27, 21, 34, 27, 29, 23, 39, 25, 29, 37, 22, 28, 28, 19, 26, 23, 30, 27, 36, 21, 25, 18, 21, 28, 34, 21, 29, 39, 20, 28, 28, 28, 20, 26, 31, 27, 27, 18, 25, 24, 24, 24, 27, 23, 28, 25, 23, 27, 27, 20, 29, 37, 20, 17, 28, 20, 29, 27, 23, 22, 44, 21, 41, 24, 26, 24, 24, 24, 25, 23, 23, 41, 57, 18, 23, 23, 26, 23, 23, 25, 28, 30, 23, 24, 26, 20, 22, 24, 25, 24, 36, 20, 30, 21, 32, 21, 21, 21, 25, 28, 23, 22, 43, 20, 36, 26, 27, 27, 30, 22, 26, 47, 29, 24, 34, 21, 28, 19, 22, 23, 24, 22, 29, 24, 26, 23, 30, 21, 25, 35, 34, 35, 35, 18, 44, 37, 21, 29, 29, 27, 21, 28, 26, 24, 31, 22, 70, 24, 25, 21, 36, 25, 25, 22, 19, 29, 34, 20, 22, 20, 20, 20, 35, 21, 50, 20, 27, 35, 24, 21, 25, 25, 24, 23, 65, 28, 28, 28, 24, 32, 32, 18, 28, 24, 31, 22, 23, 23, 24, 23, 28, 34, 44, 24, 26, 29, 27, 24, 28, 25, 41, 29, 24, 21, 41, 22, 38, 35, 20, 34, 35, 21, 28, 18, 21, 30, 35, 19, 36, 38, 26, 23, 51, 24, 28, 25, 25, 25, 26, 21, 30, 28, 35, 27, 45, 20, 39, 37, 23, 28, 25, 21, 42, 28, 21, 17, 33, 20, 23, 27, 27, 27, 28, 18, 45, 24, 24, 24, 29, 26, 32, 23, 22, 25, 34, 22, 23, 22, 23, 23, 42, 24, 30, 21, 24, 20, 51, 21, 26, 32, 24, 24, 24, 24, 31, 24, 25, 24, 25, 21, 23, 35, 25, 22, 30, 25, 38, 35, 22, 38, 92, 19, 30, 25, 32, 27, 43, 23, 28, 23, 27, 29, 30, 23, 47, 25, 24, 22, 23, 22, 22, 22, 25, 23, 49, 19, 52, 36, 22, 21, 21, 21, 31, 21, 24, 35, 32, 33, 30, 27, 29, 22, 51, 19, 38, 31, 30, 30, 28, 24, 27, 34, 26, 23, 36, 24, 27, 21, 24, 25, 25, 22, 48, 26, 24, 23, 34, 27, 29, 28, 21, 29, 38, 18, 38, 39, 26, 29, 23, 21, 30, 30, 55, 23, 49, 23, 29, 29, 24, 21, 30, 24, 26, 22, 22, 22, 31, 19, 42, 26, 32, 30, 38, 21, 29, 23, 24, 43, 30, 23, 26, 35, 23, 20, 52, 23, 25, 25, 24, 30, 32, 24, 36, 31, 23, 30, 30, 26, 29, 24, 27, 37, 30, 19, 29, 27, 27, 20, 28, 28, 31, 30, 24, 28, 33, 23, 30, 25, 23, 25, 40, 22, 45, 19, 23, 25, 68, 23, 33, 34, 35, 31, 33, 24, 30, 27, 33, 41, 27, 18, 27, 27, 36, 26, 41, 27, 30, 23, 20, 23, 24, 23, 33, 26, 30, 24, 38, 24, 32, 39, 29, 27, 35, 21, 27, 27, 24, 26, 27, 21, 23, 18, 21, 24, 26, 21, 23, 23, 24, 23, 31, 23, 31, 24, 26, 23, 30, 22, 22, 30, 30, 30, 53, 23, 46, 26, 31, 39, 27, 22, 31, 38, 21, 19, 92, 22, 26, 26, 25, 25, 72, 21, 31, 21, 21, 21, 25, 29, 38, 21, 23, 32, 37, 20, 34, 39, 37, 38, 32, 20, 30, 31, 31, 31, 78, 19, 29, 30, 22, 30, 27, 34, 36, 23, 29, 28, 28, 23, 25, 31, 25, 21, 50, 23, 30, 20, 21, 21, 23, 20, 24, 40, 35, 23, 37, 22, 94, 21, 24, 27, 27, 27, 30, 26, 27, 28, 31, 26, 31, 23, 26, 35, 35, 19, 42, 41, 27, 26, 26, 25, 26, 25, 31, 26, 33, 24, 25, 87, 23, 20, 32, 22, 39, 27, 31, 28, 55, 20, 31, 32, 20, 27, 36, 25, 31, 33, 36, 28, 37, 24, 33, 40, 24, 21, 38, 23, 40, 31, 21, 39, 39, 23, 41, 26, 28, 29, 50, 25, 28, 22, 28, 22, 22, 22, 27, 27, 25, 22, 30, 26, 21, 26, 26, 26, 56, 22, 31, 45, 24, 32, 31, 21, 42, 18, 21, 28, 31, 21, 30, 38, 26, 28, 35, 21, 45, 27, 27, 27, 27, 22, 32, 27, 27, 26, 28, 29, 55, 25, 26, 25, 25, 19, 39, 26, 39, 25, 32, 27, 24, 33, 25, 31, 57, 22, 24, 28, 44, 27, 27, 24, 27, 22, 25, 27, 27, 25, 33, 33, 22, 28, 39, 27, 32, 25, 27, 37, 31, 18, 30, 30, 44, 23, 46, 22, 35, 26, 25, 29, 29, 28, 31, 45, 28, 25, 59, 23, 39, 27, 26, 31, 28, 25, 40, 25, 27, 24, 25, 24, 25, 22, 27, 27, 38, 20, 42, 39, 31, 21, 24, 22, 22, 21, 22, 24, 53, 19, 36, 31, 35, 26, 26, 23, 30, 24, 31, 22, 41, 29, 34, 26, 29, 22, 34, 27, 32, 40, 28, 39, 25, 20, 39, 39, 26, 23, 41, 26, 28, 21, 25, 49, 26, 21, 21, 21, 29, 21, 74, 22, 31, 41, 32, 34, 38, 19, 27, 42, 22, 33, 33, 32, 32, 26, 32, 33, 42, 22, 41, 41, 26, 26, 31, 26, 50, 23, 26, 27, 47, 24, 24, 24, 24, 24, 27, 20, 32, 21, 24, 27, 33, 24, 24, 32, 29, 26, 37, 31, 33, 34, 26, 44, 52, 21, 42, 23, 26, 25, 26, 25, 28, 25, 22, 38, 37, 23, 42, 41, 23, 20, 33, 23, 33, 32, 29, 27, 39, 23, 40, 27, 22, 27, 30, 27, 30, 26, 29, 28, 28, 24, 30, 34, 31, 28, 44, 26, 32, 27, 23, 27, 28, 20, 30, 56, 25, 22], "ind": [1, 1, 2, 3, 3, 5, 4, 7, 4, 6, 6, 12, 5, 14, 7, 8, 6, 18, 7, 20, 7, 10, 12, 24, 7, 10, 8, 9, 9, 30, 9, 32, 7, 14, 12, 13, 8, 39, 16, 16, 9, 43, 11, 45, 10, 11, 25, 49, 8, 15, 11, 20, 16, 55, 10, 17, 11, 23, 31, 62, 10, 64, 12, 13, 9, 19, 15, 70, 20, 27, 13, 74, 10, 76, 13, 13, 19, 19, 17, 82, 11, 12, 43, 87, 12, 23, 32, 33, 15, 93, 12, 21, 26, 35, 24, 25, 10, 101, 16, 17, 13, 105, 21, 107, 15, 15, 56, 112, 11, 114, 17, 41, 13, 118, 23, 29, 18, 19, 25, 26, 12, 24, 45, 45, 16, 16, 14, 132, 11, 47, 20, 137, 16, 28, 13, 14, 21, 143, 27, 145, 15, 52, 26, 26, 11, 35, 17, 18, 41, 155, 14, 157, 23, 23, 20, 38, 19, 164, 57, 58, 12, 32, 13, 170, 19, 20, 87, 174, 14, 29, 24, 25, 47, 180, 18, 18, 17, 64, 93, 187, 13, 189, 22, 66, 28, 44, 30, 31, 15, 16, 26, 199, 12, 201, 21, 22, 17, 205, 18, 207, 14, 72, 37, 38, 23, 48, 29, 30, 19, 33, 16, 220, 57, 77, 49, 50, 13, 40, 78, 79, 19, 33, 42, 232, 14, 16, 118, 237, 25, 239, 22, 22, 34, 243, 20, 54, 64, 85, 26, 249, 14, 251, 14, 15, 20, 21, 35, 35, 36, 89, 17, 262, 15, 37, 25, 26, 13, 268, 46, 46, 21, 36, 137, 274, 18, 60, 28, 95, 72, 280, 15, 282, 23, 24, 22, 23, 29, 289, 37, 38, 16, 293, 52, 295, 27, 28, 27, 51, 13, 38, 36, 104, 78, 305, 19, 67, 19, 20, 39, 39, 16, 53, 107, 108, 25, 69, 24, 320, 22, 110, 38, 324, 20, 326, 18, 18, 84, 330, 42, 43, 14, 114, 33, 40, 14, 25, 116, 116, 46, 57, 20, 345, 43, 44, 74, 75, 16, 351, 30, 120, 25, 45, 23, 24, 31, 32, 181, 362, 35, 364, 19, 22, 19, 368, 65, 79, 28, 28, 187, 374, 15, 43, 27, 27, 24, 81, 67, 382, 29, 48, 45, 63, 37, 389, 19, 19, 45, 46, 17, 395, 27, 135, 200, 399, 14, 25, 50, 50, 103, 405, 23, 45, 19, 139, 87, 88, 20, 414, 30, 31, 16, 418, 47, 48, 16, 17, 39, 51, 24, 426, 49, 145, 69, 69, 30, 92, 21, 147, 33, 437, 18, 439, 54, 55, 28, 29, 71, 71, 29, 29, 51, 449, 15, 451, 38, 38, 46, 47, 80, 457, 20, 21, 34, 461, 44, 98, 157, 158, 16, 468, 17, 56, 120, 160, 27, 27, 26, 476, 26, 26, 31, 480, 23, 482, 36, 40, 243, 486, 22, 78, 55, 166, 57, 58, 30, 31, 28, 61, 250, 499, 15, 54, 34, 35, 27, 106, 16, 507, 67, 172, 22, 511, 48, 51, 22, 23, 38, 82, 90, 520, 19, 177, 262, 524, 17, 110, 31, 32, 134, 530, 27, 84, 15, 28, 112, 113, 50, 62, 47, 183, 23, 543, 37, 545, 21, 21, 52, 53, 20, 52, 61, 67, 30, 58, 96, 117, 73, 189, 27, 28, 17, 564, 191, 191, 25, 119, 25, 570, 68, 69, 23, 53, 31, 90, 46, 47, 147, 580, 39, 60, 18, 34, 293, 586, 54, 123, 18, 19, 78, 593, 29, 595, 29, 202, 34, 35, 15, 601, 39, 204, 38, 94, 67, 68, 24, 25, 306, 611, 20, 55, 67, 208, 44, 618, 21, 31, 157, 210, 40, 624, 18, 626, 53, 75, 30, 30, 109, 632, 27, 41, 64, 64, 26, 639, 50, 51, 23, 643, 111, 645, 32, 33, 100, 101, 22, 22, 35, 36, 58, 59, 19, 657, 86, 222, 137, 138, 29, 30, 44, 80, 16, 668, 115, 670, 34, 53, 41, 674, 16, 74, 25, 43, 172, 680, 117, 142, 48, 82, 58, 686, 22, 689, 35, 36, 33, 33, 45, 58, 176, 235, 76, 76, 17, 701, 19, 20, 31, 705, 108, 109, 27, 239, 46, 711, 28, 148, 25, 241, 50, 71, 33, 720, 24, 25, 149, 150, 37, 63, 245, 245, 21, 730, 23, 62, 20, 57, 112, 113, 66, 739, 80, 88, 60, 61, 29, 32, 189, 252, 375, 749, 17, 115, 44, 254, 41, 41, 28, 757, 18, 19, 65, 65, 68, 763, 23, 24, 31, 83, 49, 770, 38, 38, 64, 774, 39, 160, 91, 92, 33, 119, 20, 782, 54, 264, 46, 163, 19, 788, 39, 40, 29, 793, 121, 121, 28, 29, 76, 77, 16, 801, 26, 270, 203, 805, 43, 43, 49, 49, 65, 66, 24, 87, 38, 39, 21, 169, 140, 820, 207, 277, 88, 126, 21, 79, 63, 63, 209, 830, 31, 70, 18, 98, 88, 89, 37, 38, 49, 283, 109, 843, 18, 845, 40, 285, 52, 175, 26, 68, 27, 27, 50, 855, 146, 857, 25, 26, 70, 861, 32, 863, 92, 291, 22, 34, 148, 179, 35, 41, 437, 874, 20, 66, 295, 295, 34, 35, 32, 33, 60, 297, 30, 67, 79, 888, 30, 31, 115, 893, 30, 895, 52, 53, 450, 899, 17, 185, 41, 41, 42, 95, 39, 85, 106, 107, 24, 24, 81, 913, 307, 308, 22, 918, 22, 920, 35, 70, 462, 924, 45, 140, 23, 23, 71, 72, 159, 192, 18, 42, 68, 68, 19, 76, 55, 56, 121, 194, 161, 945, 110, 111, 28, 949, 28, 99, 71, 72, 144, 144, 27, 957, 33, 322, 89, 89, 25, 50, 112, 113, 37, 968, 36, 36, 245, 327, 36, 36, 23, 976, 78, 329, 56, 980, 70, 71, 21, 22, 58, 986, 87, 92, 32, 333, 29, 993, 62, 204, 45, 46, 150, 151, 17, 71, 55, 117, 206, 206, 35, 1007, 28, 43, 107, 1011, 18, 153, 27, 28, 69, 1018, 105, 106, 23, 119, 512, 1024, 49, 210, 52, 60, 38, 73, 24, 1032, 39, 347, 83, 213, 91, 1038, 46, 47, 21, 35, 81, 82, 77, 78, 78, 78, 19, 1051, 111, 354, 39, 1055, 33, 44, 123, 123, 531, 1061, 28, 1063, 47, 48, 17, 54, 29, 98, 26, 27, 113, 1074, 51, 1076, 34, 35, 49, 84, 184, 1082, 24, 364, 162, 163, 38, 39, 365, 366, 140, 1093, 22, 1095, 25, 25, 54, 225, 22, 165, 53, 370, 63, 1105, 68, 1107, 31, 82, 59, 114, 98, 1113, 31, 31, 74, 74, 55, 56, 282, 377, 29, 102, 18, 77, 45, 46, 45, 46, 192, 1132, 27, 30, 120, 1136, 27, 1138, 84, 84, 146, 1143, 70, 171, 25, 385, 54, 1149, 32, 39, 51, 51, 291, 1155, 48, 118, 65, 66, 237, 238, 40, 1163, 61, 391, 20, 85, 34, 1170, 22, 23, 40, 41, 56, 1176, 48, 49, 120, 120, 20, 242, 79, 397, 90, 90, 30, 178, 137, 138, 30, 244, 76, 77, 53, 402, 36, 1199, 17, 1201, 27, 28, 41, 108, 86, 87, 39, 53, 95, 1211, 106, 248, 69, 408, 81, 182, 26, 1220, 47, 47, 59, 60, 22, 124, 56, 142, 69, 1230, 37, 38, 46, 90, 618, 1236, 23, 79, 32, 416, 159, 1243, 211, 254, 33, 34, 126, 126, 19, 1251, 420, 420, 55, 256, 76, 95, 50, 51, 31, 188, 110, 1263, 20, 21, 29, 1268, 42, 83, 54, 54, 65, 1274, 26, 27, 428, 429, 322, 1280, 52, 1282, 25, 148, 40, 41, 112, 1288, 71, 72, 41, 97, 33, 131, 94, 95, 80, 81, 24, 1301, 23, 150, 194, 194, 36, 267, 167, 439, 60, 1311, 21, 117, 440, 441, 42, 43, 196, 196, 57, 58, 81, 81, 62, 93, 31, 32, 45, 1330, 80, 1332, 18, 74, 668, 1336, 116, 273, 32, 32, 36, 1343, 54, 1345, 43, 452, 52, 52, 18, 1351, 75, 454, 27, 1355, 44, 1357, 41, 41, 681, 1361, 39, 39, 49, 50, 50, 121, 82, 279, 59, 460, 687, 1374, 24, 1376, 24, 24, 66, 66, 37, 1382, 92, 464, 34, 39, 47, 83, 59, 101, 178, 207, 122, 123, 77, 161, 77, 103, 19, 285, 470, 470, 96, 97, 21, 209, 33, 59, 287, 287, 89, 90, 110, 163, 29, 1417, 84, 85, 30, 30, 712, 1424, 30, 85, 149, 479, 26, 1430, 28, 29, 29, 30, 71, 213, 35, 1438, 482, 483, 184, 294, 26, 99, 364, 485, 126, 127, 39, 215, 43, 43, 145, 145, 246, 1457, 23, 489, 91, 92, 25, 298, 62, 81, 22, 1467, 58, 107, 168, 169, 114, 300, 68, 129, 60, 61, 46, 47, 89, 1482, 33, 34, 61, 1486, 31, 1488, 33, 64, 190, 1492, 56, 56, 376, 502, 749, 1499, 19, 149, 56, 57, 43, 44, 254, 1507, 37, 38, 42, 1511, 30, 1513, 109, 109, 27, 87, 20, 1520, 84, 510, 41, 42, 70, 310, 175, 175, 132, 133, 25, 1532, 33, 514, 72, 73, 51, 228, 53, 54, 48, 1542, 39, 1545, 25, 26, 774, 1549, 41, 1551, 84, 85, 391, 1555, 45, 45, 35, 522, 120, 1561, 22, 105, 179, 180, 56, 58, 155, 156, 48, 527, 163, 1574, 20, 113, 113, 113, 88, 89, 41, 49, 31, 35, 793, 1586, 74, 75, 122, 533, 157, 158, 30, 1595, 86, 87, 78, 325, 18, 91, 31, 32, 28, 98, 271, 1607, 115, 115, 41, 42, 53, 1613, 44, 65, 106, 1617, 50, 329, 185, 186, 67, 1624, 26, 240, 88, 545, 47, 331, 40, 1632, 23, 547, 170, 1636, 40, 41, 24, 25, 109, 110, 277, 1645, 55, 56, 126, 1649, 23, 335, 54, 55, 244, 244, 64, 91, 69, 70, 48, 49, 33, 1663, 60, 61, 20, 1667, 99, 246, 119, 120, 90, 1674, 76, 1676, 38, 192, 50, 1680, 46, 46, 30, 31, 843, 1686, 20, 1688, 565, 566, 30, 31, 286, 1695, 54, 194, 176, 250, 28, 102, 69, 122, 428, 1705, 28, 168, 52, 572, 93, 94, 62, 63, 71, 72, 113, 122, 26, 148, 56, 56, 349, 350, 34, 1726, 92, 93, 94, 170, 292, 1732, 24, 50, 35, 1736, 150, 1738, 180, 583, 37, 257, 42, 81, 63, 63, 104, 104, 21, 94, 36, 37, 356, 356, 258, 259, 223, 589, 36, 116, 57, 1763, 34, 126, 62, 1767, 298, 1769, 22, 23, 68, 152, 50, 51, 595, 595, 74, 1780, 32, 97, 117, 597, 29, 30, 32, 126, 204, 205, 54, 1792, 54, 1794, 37, 38, 176, 176, 18, 44, 186, 604, 453, 1805, 42, 367, 44, 207, 94, 95, 41, 1813, 86, 97, 119, 369, 107, 1819, 49, 71, 25, 128, 83, 1826, 27, 28, 269, 269, 309, 1832, 24, 614, 95, 96, 24, 373, 58, 58, 37, 99, 45, 46, 210, 211, 84, 85, 47, 1851, 141, 620, 100, 158, 24, 1857, 34, 34, 73, 1861, 160, 1863, 192, 213, 20, 183, 43, 379, 470, 627, 69, 275, 21, 1876, 77, 629, 48, 49, 56, 160, 78, 78, 195, 1886, 54, 55, 33, 33, 110, 111, 112, 132, 30, 635, 949, 1899, 30, 87, 43, 44, 99, 100, 73, 1907, 67, 67, 145, 387, 29, 187, 640, 641, 35, 282, 123, 124, 53, 54, 90, 1924, 26, 99, 50, 645, 133, 134, 68, 69, 39, 647, 43, 44, 43, 1938, 35, 36, 246, 394, 327, 1944, 103, 103, 37, 1949, 25, 1951, 25, 26, 80, 1955, 329, 1957, 38, 39, 287, 288, 51, 52, 61, 62, 69, 1967, 23, 102, 60, 660, 399, 400, 89, 290, 92, 225, 33, 1980, 192, 193, 31, 140, 993, 1986, 63, 115, 32, 33, 253, 1992, 47, 404, 82, 83, 128, 128, 19, 138, 72, 670, 30, 31, 100, 100, 255, 672, 207, 2011, 37, 2013, 55, 56, 30, 171, 44, 296, 109, 676, 105, 106, 20, 410, 77, 77, 509, 2030, 29, 2032, 45, 46, 50, 50, 130, 130, 106, 683, 25, 101, 120, 173, 144, 145, 300, 300, 51, 199, 84, 85, 53, 2055, 60, 93, 39, 689, 74, 2061, 25, 303, 690, 691, 41, 419, 348, 2069, 38, 39, 201, 201, 93, 2076, 36, 36, 522, 2080, 48, 2082, 22, 61, 36, 2086, 179, 423, 83, 238, 59, 59, 79, 2094, 79, 79, 53, 54, 21, 2101, 703, 704, 102, 103, 46, 47, 22, 23, 1056, 2111, 34, 2113, 45, 708, 134, 135, 57, 57, 111, 112, 1062, 2124, 30, 179, 241, 242, 86, 431, 49, 121, 19, 714, 55, 313, 31, 2138, 99, 151, 45, 45, 28, 110, 115, 244, 1074, 2149, 53, 75, 73, 74, 64, 2155, 36, 137, 50, 722, 85, 98, 108, 108, 28, 28, 26, 2167, 365, 2169, 152, 153, 164, 2174, 40, 2176, 39, 66, 48, 48, 367, 442, 142, 248, 1093, 2186, 24, 212, 732, 733, 278, 444, 26, 61, 55, 65, 226, 2199, 23, 2201, 59, 60, 54, 112, 185, 185, 64, 116, 213, 214, 34, 35, 740, 741, 33, 2217, 83, 2219, 60, 91, 77, 77, 99, 2226, 63, 63, 119, 2230, 32, 2232, 35, 35, 75, 141, 191, 328, 57, 255, 284, 2242, 377, 454, 30, 751, 103, 153, 20, 2251, 78, 118, 455, 456, 47, 218, 256, 257, 47, 189, 106, 107, 44, 44, 28, 332, 31, 2269, 121, 760, 107, 108, 28, 53, 21, 22, 219, 220, 85, 334, 68, 68, 462, 462, 46, 47, 172, 766, 27, 112, 386, 2294, 26, 27, 1149, 2299, 34, 108, 40, 86, 92, 2305, 52, 467, 292, 772, 337, 338, 49, 2313, 40, 41, 103, 104, 67, 157, 582, 776, 129, 129, 42, 52, 163, 163, 63, 2330, 392, 2332, 22, 95, 85, 2336, 36, 473, 121, 122, 195, 196, 24, 2344, 589, 785, 41, 61, 57, 110, 266, 267, 48, 49, 49, 115, 165, 165, 121, 2361, 22, 2363, 242, 791, 81, 2367, 32, 33, 42, 43, 91, 109, 32, 2376, 178, 795, 480, 481, 139, 2382, 32, 124, 118, 118, 204, 2388, 31, 32, 54, 2392, 47, 47, 37, 80, 65, 66, 19, 485, 803, 804, 603, 2405, 29, 2407, 42, 273, 109, 487, 206, 353, 87, 808, 41, 233, 54, 133, 46, 46, 201, 202, 108, 163, 52, 52, 70, 2430, 409, 492, 68, 69, 183, 2436, 27, 2438, 89, 90, 83, 83, 48, 2444, 41, 42, 61, 2448, 24, 204, 125, 172, 58, 2455, 143, 359, 71, 822, 165, 165, 63, 64, 39, 280, 47, 136, 91, 2469, 128, 128, 36, 37, 25, 2476, 79, 82, 34, 2480, 417, 2482, 66, 66, 53, 54, 212, 2488, 255, 833, 43, 2492, 34, 504, 72, 72, 127, 2498, 21, 33, 101, 101, 59, 60, 122, 122, 56, 92, 257, 2511, 78, 155, 40, 41, 163, 2517, 52, 113, 33, 286, 189, 2523, 111, 112, 845, 845, 368, 369, 22, 48, 30, 847, 512, 512, 43, 2538, 84, 288, 73, 2542, 55, 371, 67, 178, 1274, 2548, 29, 121, 28, 71, 244, 245, 429, 517, 30, 31, 1281, 2561, 53, 140, 857, 858, 27, 57, 149, 2569, 645, 860, 42, 375, 114, 2576, 28, 29, 647, 2580, 73, 116, 43, 864, 97, 214, 35, 88, 131, 866, 159, 160, 95, 114, 103, 294, 82, 525, 26, 249, 37, 37, 25]}</script>
+<script>
+(function(){
+  var rows = JSON.parse(document.getElementById('rows').textContent);
+  var S    = JSON.parse(document.getElementById('series').textContent);
+  var CONV = {pos:'x, y &gt; 0', nonneg:'x, y ≥ 0', ordered:'ordered x, y &gt; 0',
+              lt:'0 &lt; x &lt; y', gepos:'x ≥ y &gt; 0', lein:'0 ≤ x ≤ y'};
+
+  function formLabel(b,c){
+    var s='x²';
+    if(b===1) s+=' + xy'; else if(b>1) s+=' + '+b+'xy';
+    s += (c===1)?' + y²':' + '+c+'y²';
+    return s;
+  }
+  var tb=document.getElementById('tbody');
+  rows.sort(function(a,b){ return a.delta-b.delta || a.a.localeCompare(b.a); });
+  rows.forEach(function(r){
+    var pct = Math.round(100*r.ver/r.held);
+    var tr=document.createElement('tr');
+    tr.innerHTML =
+      '<td><a href="https://oeis.org/'+r.a+'" target="_blank" rel="noopener" class="mono">'+r.a+'</a></td>'+
+      '<td class="mono">'+formLabel(r.b,r.c)+'</td>'+
+      '<td class="num">'+r.delta+(r.f>1?'<span class="chip" style="margin-left:6px">f=2</span>':'')+'</td>'+
+      '<td class="num">'+r.h+'</td>'+
+      '<td>'+(CONV[r.conv]||r.conv)+'</td>'+
+      '<td class="num">'+r.pub+'</td>'+
+      '<td class="num"><b>'+r.held+'</b></td>'+
+      '<td><span class="meter"><span class="bar"><span class="fill" style="width:'+pct+'%"></span></span>'+
+        '<span class="n">'+r.ver+'</span></span></td>'+
+      '<td class="num">'+(r.block||'—')+'</td>';
+    tb.appendChild(tr);
+  });
+
+  // ---- chart: digits of a(n) vs n, two series -----------------------------
+  var svg=document.getElementById('chart'), tip=document.getElementById('tip');
+  var series=[{k:'h1',name:'A374158 · h = 1',col:'--s2'},{k:'h3',name:'A374160 · h = 3',col:'--s1'}];
+  var PAD={l:40,r:52,t:12,b:26};
+
+  function draw(){
+    var W=svg.clientWidth||760, H=250;
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    var N=S.h1.length-1;
+    var maxY=0; series.forEach(function(s){S[s.k].forEach(function(v){if(v>maxY)maxY=v;});});
+    maxY=Math.ceil(maxY/50)*50;
+    var iw=W-PAD.l-PAD.r, ih=H-PAD.t-PAD.b;
+    var X=function(i){return PAD.l+iw*i/N;}, Y=function(v){return PAD.t+ih-ih*v/maxY;};
+    var css=getComputedStyle(document.documentElement);
+    var rule=css.getPropertyValue('--rule-soft').trim(), muted=css.getPropertyValue('--muted').trim();
+    var out='';
+    for(var g=0; g<=4; g++){
+      var v=maxY*g/4, y=Y(v);
+      out+='<line x1="'+PAD.l+'" x2="'+(W-PAD.r)+'" y1="'+y+'" y2="'+y+'" stroke="'+rule+'" stroke-width="1"/>';
+      out+='<text x="'+(PAD.l-8)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="10.5" text-anchor="end" font-family="ui-monospace,Consolas,monospace">'+v+'</text>';
+    }
+    [0,100,200,300,400,500].forEach(function(n){
+      out+='<text x="'+X(n)+'" y="'+(H-8)+'" fill="'+muted+'" font-size="10.5" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+n+'</text>';
+    });
+    series.forEach(function(s){
+      var col=css.getPropertyValue(s.col).trim(), d='';
+      S[s.k].forEach(function(v,i){ d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1); });
+      out+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/>';
+      var last=S[s.k][N];
+      out+='<circle cx="'+X(N)+'" cy="'+Y(last)+'" r="3.5" fill="'+col+'" stroke="'+css.getPropertyValue('--surface').trim()+'" stroke-width="2"/>';
+      out+='<text x="'+(X(N)+8)+'" y="'+(Y(last)+4)+'" fill="'+col+'" font-size="11" font-family="ui-monospace,Consolas,monospace">'+last+'</text>';
+    });
+    out+='<line id="cross" x1="0" x2="0" y1="'+PAD.t+'" y2="'+(PAD.t+ih)+'" stroke="'+muted+'" stroke-width="1" opacity="0"/>';
+    svg.innerHTML=out;
+    svg._X=X; svg._N=N; svg._W=W;
+  }
+  draw();
+  window.addEventListener('resize',draw);
+  if(window.matchMedia) window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
+  new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+  function move(e){
+    var r=svg.getBoundingClientRect();
+    var px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    var i=Math.round((px-PAD.l)/(r.width-PAD.l-PAD.r)*svg._N);
+    if(i<0||i>svg._N){ tip.style.opacity=0; return; }
+    var cross=svg.querySelector('#cross');
+    if(cross){ var x=svg._X(i)*(r.width/svg._W); cross.setAttribute('x1',svg._X(i)); cross.setAttribute('x2',svg._X(i)); cross.setAttribute('opacity','.4'); }
+    tip.innerHTML='<b>n = '+i+'</b><br>A374158 &nbsp;'+S.h1[i]+' digits<br>A374160 &nbsp;'+S.h3[i]+' digits';
+    tip.style.opacity=1;
+    tip.style.left=Math.min(window.innerWidth-190,(e.touches?e.touches[0].clientX:e.clientX)+14)+'px';
+    tip.style.top=((e.touches?e.touches[0].clientY:e.clientY)-10)+'px';
+  }
+  svg.addEventListener('mousemove',move);
+  svg.addEventListener('touchmove',move,{passive:true});
+  svg.addEventListener('mouseleave',function(){ tip.style.opacity=0;
+    var c=svg.querySelector('#cross'); if(c) c.setAttribute('opacity','0'); });
+})();
+</script>
